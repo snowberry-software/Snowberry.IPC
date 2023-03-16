@@ -1,3 +1,6 @@
+[![License](https://img.shields.io/github/license/snowberry-software/Snowberry.IPC)](https://github.com/snowberry-software/Snowberry.IPC/blob/master/LICENSE)
+[![NuGet Version](https://img.shields.io/nuget/v/Snowberry.IPC.svg?logo=nuget)](https://www.nuget.org/packages/Snowberry.IPC/)
+
 # Snowberry.IPC
 
 Interprocess communication (IPC) library utilizes named pipes to allow communication between different processes running on the same machine.
