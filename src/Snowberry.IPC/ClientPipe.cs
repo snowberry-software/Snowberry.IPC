@@ -12,6 +12,12 @@ public class ClientPipe : BasePipe
     public ClientPipe(string serverName, string pipeName, string? pipeDebugName) : base(pipeDebugName)
     {
         _pipeStream = new NamedPipeClientStream(serverName, pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
+        OnPipeStreamInitialized();
+    }
+
+    /// <inheritdoc/>
+    protected override void OnPipeStreamInitialized()
+    {
     }
 
     /// <summary>

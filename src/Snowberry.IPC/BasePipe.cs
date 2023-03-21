@@ -43,6 +43,11 @@ public abstract class BasePipe : IDisposable
     }
 
     /// <summary>
+    /// Gets called when the pipe stream has been initialized.
+    /// </summary>
+    protected abstract void OnPipeStreamInitialized();
+
+    /// <summary>
     /// Gets called when the pipe closes.
     /// </summary>
     /// <param name="reason">The reason for the close.</param>

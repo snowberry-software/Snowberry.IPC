@@ -22,8 +22,15 @@ public class ServerPipe : BasePipe
                 PipeTransmissionMode.Byte,
                 PipeOptions.Asynchronous);
 
+        OnPipeStreamInitialized();
+
         ((NamedPipeServerStream)_pipeStream).BeginWaitForConnection(new AsyncCallback(GotPipeConnection), this);
         _cancellationToken = cancellationToken;
+    }
+
+    /// <inheritdoc/>
+    protected override void OnPipeStreamInitialized()
+    {
     }
 
     protected static void GotPipeConnectionStatic(IAsyncResult result)
