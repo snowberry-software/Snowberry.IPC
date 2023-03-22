@@ -23,10 +23,32 @@ public class ClientPipe : BasePipe
     /// <summary>
     /// Connects the client to the server pipe.
     /// </summary>
-    public async Task ConnectAsync()
+    /// <param name="timeout"> The optional number of milliseconds to wait for the server to respond before the connection times out.</param>
+    public async Task<bool> ConnectAsync(int? timeout = null)
     {
         _ = _pipeStream ?? throw new NullReferenceException(nameof(_pipeStream));
-        await ((NamedPipeClientStream)_pipeStream).ConnectAsync();
-        _protectedIsConnected = true;
+        _protectedIsConnected = false;
+
+        if (timeout == null)
+            await ((NamedPipeClientStream)_pipeStream).ConnectAsync();
+        else
+        {
+            try
+            {
+                await ((NamedPipeClientStream)_pipeStream).ConnectAsync(timeout.Value);
+            }
+            catch (TimeoutException)
+            {
+                return false;
+            }
+        }
+
+        if (_pipeStream.IsConnected)
+        {
+            _protectedIsConnected = true;
+            return true;
+        }
+
+        return false;
     }
 }

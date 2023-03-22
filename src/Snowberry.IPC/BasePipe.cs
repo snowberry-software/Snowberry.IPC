@@ -208,7 +208,7 @@ public abstract class BasePipe : IDisposable
 #if NET6_0_OR_GREATER
             if (OperatingSystem.IsWindows())
 #endif
-                _pipeStream.WaitForPipeDrain();
+            _pipeStream.WaitForPipeDrain();
         }
 
         _pipeStream.Close();
@@ -225,7 +225,13 @@ public abstract class BasePipe : IDisposable
     /// <summary>
     /// Determines wheter the pipe stream is connected.
     /// </summary>
-    public bool IsConnected => _pipeStream != null && _pipeStream.IsConnected && _protectedIsConnected;
+    public bool IsConnected =>
+            // NOTE(VNC):
+            //
+            // Only using the `IsConnected` property is unreliable.
+            // The property could be true even though the pipe is already broken.
+            //
+            _pipeStream != null && _pipeStream.IsConnected && _protectedIsConnected;
 
     /// <summary>
     /// Determines whether to use a dynamic buffer size.
@@ -235,4 +241,9 @@ public abstract class BasePipe : IDisposable
     /// The read operation will only be completed if the data length is exactly as the length that has been provided.<para/>
     /// </remarks>
     public bool UseDynamicDataPacketSize { get; set; }
+
+    /// <summary>
+    /// The pipe stream that is used.
+    /// </summary>
+    public PipeStream? Stream => _pipeStream;
 }
