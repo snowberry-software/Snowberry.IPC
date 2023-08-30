@@ -38,7 +38,7 @@ while (clientPipe.IsConnected)
 
     if (data[0] == 'x')
     {
-        await clientPipe.WriteAsync(Encoding.UTF8.GetBytes(new string('A', clientPipe.MaxBufferLength * 2)));
+        await clientPipe.WriteAsync(Encoding.UTF8.GetBytes(new string('A', BasePipe.MaxBufferLength * 2)));
         continue;
     }
 

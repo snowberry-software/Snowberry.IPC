@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO.Pipes;
 using System.Linq;
 using System.Threading;
@@ -89,32 +90,49 @@ public abstract class BasePipe : IDisposable
             throw new ArgumentOutOfRangeException(nameof(MaxBufferLength), $"The {nameof(MaxBufferLength)} must be at least 4 bytes.");
 
         byte[] buffer = new byte[MaxBufferLength];
+
+        Debug.WriteLineIf(EnableDebugLogs, $"{_pipeDebugName}: Start reading...");
         if (!UseDynamicDataPacketSize)
         {
-#if NET6_0_OR_GREATER
-            int readLength = await _pipeStream.ReadAsync(buffer.AsMemory(0, MaxBufferLength), token);
-#else
-            int readLength = await _pipeStream.ReadAsync(buffer, 0, MaxBufferLength, token);
-#endif
-
-            if (IsPipeClosed(readLength, token))
-                return;
-
-            OnDataReceived(buffer, readLength);
-            DataReceived?.Invoke(this, new PipeEventArgs(buffer, readLength));
-            await StartReadingAsync(token);
+            await HandleStaticBufferAsync(buffer, token);
             return;
         }
 
+        await HandleDynamicBufferAsync(buffer, token);
+    }
+
+    protected virtual async Task HandleStaticBufferAsync(byte[] buffer, CancellationToken token)
+    {
+#if NET6_0_OR_GREATER
+        int readLength = await _pipeStream!.ReadAsync(buffer.AsMemory(0, MaxBufferLength), token);
+#else
+        int readLength = await _pipeStream!.ReadAsync(buffer, 0, MaxBufferLength, token);
+#endif
+
+        Debug.WriteLineIf(EnableDebugLogs, $"{_pipeDebugName}: Statically read {readLength} bytes...");
+
+        if (IsPipeClosed(readLength, token))
+            return;
+
+        OnDataReceived(buffer, readLength);
+        DataReceived?.Invoke(this, new PipeEventArgs(buffer, readLength));
+        await StartReadingAsync(token);
+    }
+
+    protected virtual async Task HandleDynamicBufferAsync(byte[] buffer, CancellationToken token)
+    {
         int expectedRead = -1;
         var dynamicBuffer = new List<byte>();
         do
         {
 #if NET6_0_OR_GREATER
-            int readLength = await _pipeStream.ReadAsync(buffer.AsMemory(0, MaxBufferLength), token);
+            int readLength = await _pipeStream!.ReadAsync(buffer.AsMemory(0, MaxBufferLength), token);
 #else
-            int readLength = await _pipeStream.ReadAsync(buffer, 0, MaxBufferLength, token);
+            int readLength = await _pipeStream!.ReadAsync(buffer, 0, MaxBufferLength, token);
 #endif
+
+            Debug.WriteLineIf(EnableDebugLogs, $"{_pipeDebugName}: Dynamically read {readLength} bytes...");
+
             if (IsPipeClosed(readLength, token))
                 return;
 
@@ -170,8 +188,10 @@ public abstract class BasePipe : IDisposable
     {
         _ = _pipeStream ?? throw new NullReferenceException(nameof(_pipeStream));
 
+        Debug.WriteLineIf(EnableDebugLogs, $"{_pipeDebugName}: Writing {length} bytes...");
         if (UseDynamicDataPacketSize)
         {
+            Debug.WriteLineIf(EnableDebugLogs, $"\t> Using dynamic write...");
 
 #if NET6_0_OR_GREATER
             var packet = new List<byte>(data.AsSpan().Slice(offset, length).ToArray());
@@ -251,6 +271,11 @@ public abstract class BasePipe : IDisposable
         get => _useDynamicDataPacketSize;
         set => _useDynamicDataPacketSize = value;
     }
+
+    /// <summary>
+    /// Enables debug loggin.
+    /// </summary>
+    public bool EnableDebugLogs { get; set; }
 
     /// <summary>
     /// The pipe stream that is used.
