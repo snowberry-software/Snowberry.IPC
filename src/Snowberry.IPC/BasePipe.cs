@@ -13,7 +13,7 @@ namespace Snowberry.IPC;
 /// </summary>
 public abstract class BasePipe : IDisposable
 {
-    public int MaxBufferLength = 1024 * 1024;
+    public const int MaxBufferLength = 1024 * 1024;
 
     /// <summary>
     /// Gets fired when new data is received.
