@@ -7,10 +7,11 @@ namespace Snowberry.IPC.Events;
 /// </summary>
 public class PipeEventArgs : EventArgs
 {
-    public PipeEventArgs(byte[] data, int dataLength)
+    public PipeEventArgs(byte[] data, int dataLength, bool usedDynamicallyRead)
     {
         Data = data;
         Length = dataLength;
+        UsedDynamicallyRead = usedDynamicallyRead;
     }
 
     /// <summary>
@@ -22,4 +23,9 @@ public class PipeEventArgs : EventArgs
     /// The length of the data.
     /// </summary>
     public int Length { get; }
+
+    /// <summary>
+    /// Whether the data has been read 'dynamically'.
+    /// </summary>
+    public bool UsedDynamicallyRead { get; }
 }

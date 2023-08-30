@@ -118,7 +118,7 @@ public abstract class BasePipe : IDisposable
             return;
 
         OnDataReceived(buffer, readLength);
-        DataReceived?.Invoke(this, new PipeEventArgs(buffer, readLength));
+        DataReceived?.Invoke(this, new PipeEventArgs(buffer, readLength, usedDynamicallyRead: false));
         await StartReadingAsync(token);
     }
 
@@ -153,7 +153,7 @@ public abstract class BasePipe : IDisposable
 #endif
 
                     OnDataReceived(actualBuffer, actualBuffer.Length);
-                    DataReceived?.Invoke(this, new PipeEventArgs(actualBuffer, actualBuffer.Length));
+                    DataReceived?.Invoke(this, new PipeEventArgs(actualBuffer, actualBuffer.Length, usedDynamicallyRead: true));
                     await StartReadingAsync(token);
                     return;
                 }
@@ -166,7 +166,7 @@ public abstract class BasePipe : IDisposable
 
         buffer = dynamicBuffer.ToArray();
         OnDataReceived(buffer, buffer.Length);
-        DataReceived?.Invoke(this, new PipeEventArgs(buffer, buffer.Length));
+        DataReceived?.Invoke(this, new PipeEventArgs(buffer, buffer.Length, usedDynamicallyRead: true));
 
         await StartReadingAsync(token);
     }
