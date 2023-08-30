@@ -30,11 +30,17 @@ public abstract class BasePipe : IDisposable
     protected bool _protectedIsConnected;
 
     protected List<byte> _dynamicPacketBuffer = new();
+    protected bool _useDynamicDataPacketSize;
 
-    public BasePipe(string? pipeDebugName, PipeStream pipeStream)
+    public BasePipe(string? pipeDebugName, PipeStream pipeStream) : this(pipeDebugName, pipeStream, false)
+    {
+    }
+
+    public BasePipe(string? pipeDebugName, PipeStream pipeStream, bool useDynamicDataPacketSize)
     {
         _pipeDebugName = pipeDebugName;
         _pipeStream = pipeStream ?? throw new ArgumentNullException(nameof(pipeStream));
+        _useDynamicDataPacketSize = useDynamicDataPacketSize;
     }
 
     protected BasePipe(string? pipeDebugName)
@@ -208,7 +214,7 @@ public abstract class BasePipe : IDisposable
 #if NET6_0_OR_GREATER
             if (OperatingSystem.IsWindows())
 #endif
-            _pipeStream.WaitForPipeDrain();
+                _pipeStream.WaitForPipeDrain();
         }
 
         _pipeStream.Close();
@@ -240,7 +246,11 @@ public abstract class BasePipe : IDisposable
     /// The length of the data will be written as 32bit-integer before the payload if this is enabled.<para/>
     /// The read operation will only be completed if the data length is exactly as the length that has been provided.<para/>
     /// </remarks>
-    public bool UseDynamicDataPacketSize { get; set; }
+    public bool UseDynamicDataPacketSize
+    {
+        get => _useDynamicDataPacketSize;
+        set => _useDynamicDataPacketSize = value;
+    }
 
     /// <summary>
     /// The pipe stream that is used.
