@@ -91,7 +91,9 @@ public abstract class BasePipe : IDisposable
 
         byte[] buffer = new byte[MaxBufferLength];
 
-        Debug.WriteLineIf(EnableDebugLogs, $"{_pipeDebugName}: Start reading...");
+        if (EnableDebugLogs)
+            Console.WriteLine($"{_pipeDebugName}: Start reading...");
+
         if (!UseDynamicDataPacketSize)
         {
             await HandleStaticBufferAsync(buffer, token);
@@ -109,7 +111,8 @@ public abstract class BasePipe : IDisposable
         int readLength = await _pipeStream!.ReadAsync(buffer, 0, MaxBufferLength, token);
 #endif
 
-        Debug.WriteLineIf(EnableDebugLogs, $"{_pipeDebugName}: Statically read {readLength} bytes...");
+        if (EnableDebugLogs)
+            Console.WriteLine($"{_pipeDebugName}: Statically read {readLength} bytes...");
 
         if (IsPipeClosed(readLength, token))
             return;
@@ -131,7 +134,8 @@ public abstract class BasePipe : IDisposable
             int readLength = await _pipeStream!.ReadAsync(buffer, 0, MaxBufferLength, token);
 #endif
 
-            Debug.WriteLineIf(EnableDebugLogs, $"{_pipeDebugName}: Dynamically read {readLength} bytes...");
+            if (EnableDebugLogs)
+                Console.WriteLine($"{_pipeDebugName}: Dynamically read {readLength} bytes...");
 
             if (IsPipeClosed(readLength, token))
                 return;
@@ -188,10 +192,13 @@ public abstract class BasePipe : IDisposable
     {
         _ = _pipeStream ?? throw new NullReferenceException(nameof(_pipeStream));
 
-        Debug.WriteLineIf(EnableDebugLogs, $"{_pipeDebugName}: Writing {length} bytes...");
+        if (EnableDebugLogs)
+            Console.WriteLine($"{_pipeDebugName}: Writing {length} bytes...");
+
         if (UseDynamicDataPacketSize)
         {
-            Debug.WriteLineIf(EnableDebugLogs, $"\t> Using dynamic write...");
+            if (EnableDebugLogs)
+                Console.WriteLine($"\t> Using dynamic write...");
 
 #if NET6_0_OR_GREATER
             var packet = new List<byte>(data.AsSpan().Slice(offset, length).ToArray());
