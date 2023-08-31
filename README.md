@@ -15,6 +15,8 @@ using var serverPipe = new ServerPipe("EXAMPLE_PIPE", "Example Server", Cancella
     UseDynamicDataPacketSize = true
 };
 
+serverPipe.Initialize();
+
 serverPipe.DataReceived += (s, e) =>
 {
     Console.ForegroundColor = ConsoleColor.Green;

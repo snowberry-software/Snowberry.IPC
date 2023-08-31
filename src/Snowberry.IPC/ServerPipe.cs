@@ -24,8 +24,15 @@ public class ServerPipe : BasePipe
 
         OnPipeStreamInitialized();
 
-        ((NamedPipeServerStream)_pipeStream).BeginWaitForConnection(new AsyncCallback(GotPipeConnection), this);
         _cancellationToken = cancellationToken;
+    }
+
+    /// <summary>
+    /// Initializes the server pipe and asynchronously waits for the client before starting to read data.
+    /// </summary>
+    public virtual void Initialize()
+    {
+        (_pipeStream as NamedPipeServerStream)?.BeginWaitForConnection(new AsyncCallback(GotPipeConnectionStatic), this);
     }
 
     /// <inheritdoc/>

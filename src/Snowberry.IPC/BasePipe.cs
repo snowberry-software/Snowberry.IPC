@@ -105,6 +105,9 @@ public abstract class BasePipe : IDisposable
 
     protected virtual async Task HandleStaticBufferAsync(byte[] buffer, CancellationToken token)
     {
+        if (EnableDebugLogs)
+            Console.WriteLine($"{_pipeDebugName}: Reading statically...");
+
 #if NET6_0_OR_GREATER
         int readLength = await _pipeStream!.ReadAsync(buffer.AsMemory(0, MaxBufferLength), token);
 #else
@@ -124,6 +127,9 @@ public abstract class BasePipe : IDisposable
 
     protected virtual async Task HandleDynamicBufferAsync(byte[] buffer, CancellationToken token)
     {
+        if (EnableDebugLogs)
+            Console.WriteLine($"{_pipeDebugName}: Reading dynamically...");
+
         int expectedRead = -1;
         var dynamicBuffer = new List<byte>();
         do
