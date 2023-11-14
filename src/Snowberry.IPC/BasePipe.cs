@@ -30,7 +30,7 @@ public abstract class BasePipe : IDisposable
     protected PipeStream? _pipeStream;
     protected bool _protectedIsConnected;
 
-    protected List<byte> _dynamicPacketBuffer = new();
+    protected List<byte> _dynamicPacketBuffer = [];
     protected bool _useDynamicDataPacketSize;
 
     public BasePipe(string? pipeDebugName, PipeStream pipeStream) : this(pipeDebugName, pipeStream, false)
@@ -170,7 +170,7 @@ public abstract class BasePipe : IDisposable
             dynamicBuffer.AddRange(buffer.Take(readLength));
         } while (IsConnected && dynamicBuffer.Count < expectedRead);
 
-        buffer = dynamicBuffer.ToArray();
+        buffer = [.. dynamicBuffer];
         OnDataReceived(buffer, buffer.Length);
         DataReceived?.Invoke(this, new PipeEventArgs(buffer, buffer.Length, usedDynamicallyRead: true));
 
@@ -213,7 +213,7 @@ public abstract class BasePipe : IDisposable
 #endif
             packet.InsertRange(0, BitConverter.GetBytes(length));
 
-            return _pipeStream.WriteAsync(packet.ToArray(), 0, packet.Count);
+            return _pipeStream.WriteAsync([.. packet], 0, packet.Count);
         }
 
         return _pipeStream.WriteAsync(data, offset, length);
