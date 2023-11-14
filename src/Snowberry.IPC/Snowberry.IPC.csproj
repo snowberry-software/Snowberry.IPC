@@ -1,62 +1,62 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFrameworks>net6.0;net7.0;netstandard2.0</TargetFrameworks>
-		<ImplicitUsings>disable</ImplicitUsings>
-		<Nullable>enable</Nullable>
-		<LangVersion>preview</LangVersion>
+    <PropertyGroup>
+        <TargetFrameworks>net6.0;net7.0;net8.0;netstandard2.0</TargetFrameworks>
+        <ImplicitUsings>disable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>preview</LangVersion>
 
-		<Authors>Snowberry Software</Authors>
-		<Description>Interprocess communication (IPC) library utilizes named pipes to allow communication between different processes running on the same machine.</Description>
+        <Authors>Snowberry Software</Authors>
+        <Description>Interprocess communication (IPC) library utilizes named pipes to allow communication between different processes running on the same machine.</Description>
 
-		<AssemblyVersion>1.0.0.9</AssemblyVersion>
-		<VersionPrefix>1.0.9</VersionPrefix>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+        <VersionPrefix>2.0.0</VersionPrefix>
 
-		<IsPackable>true</IsPackable>
-		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<PackageTags>ipc, interprocess communication, lightweight, simple, easy</PackageTags>
+        <IsPackable>true</IsPackable>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageTags>ipc, interprocess communication, lightweight, simple, easy</PackageTags>
 
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<IncludeBuildOutput>true</IncludeBuildOutput>
-		<Copyright>Copyright © 2023 Snowberry Software</Copyright>
-		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-		<PackageProjectUrl>https://github.com/snowberry-software/Snowberry.IPC</PackageProjectUrl>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <IncludeBuildOutput>true</IncludeBuildOutput>
+        <Copyright>Copyright © 2023 Snowberry Software</Copyright>
+        <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+        <PackageProjectUrl>https://github.com/snowberry-software/Snowberry.IPC</PackageProjectUrl>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
 
-		<RepositoryType>git</RepositoryType>
-		<RepositoryUrl>https://github.com/snowberry-software/Snowberry.IPC.git</RepositoryUrl>
-	</PropertyGroup>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryUrl>https://github.com/snowberry-software/Snowberry.IPC.git</RepositoryUrl>
+    </PropertyGroup>
 
-	<PropertyGroup>
-		<!-- Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
-		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <PropertyGroup>
+        <!-- Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
 
-		<!-- Embed source files that are not tracked by the source control manager in the PDB -->
-		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <!-- Embed source files that are not tracked by the source control manager in the PDB -->
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
 
-		<!-- Recommended: Embed symbols containing Source Link in the main file (exe/dll) -->
-		<DebugType>embedded</DebugType>
-	</PropertyGroup>
+        <!-- Recommended: Embed symbols containing Source Link in the main file (exe/dll) -->
+        <DebugType>embedded</DebugType>
+    </PropertyGroup>
 
-	<!-- Deterministic Builds -->
-	<PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
-		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-	</PropertyGroup>
+    <!-- Deterministic Builds -->
+    <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+        <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    </PropertyGroup>
 
-	<PropertyGroup Condition="'$(TF_BUILD)' == 'true'">
-		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-	</PropertyGroup>
+    <PropertyGroup Condition="'$(TF_BUILD)' == 'true'">
+        <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    </PropertyGroup>
 
-	<ItemGroup>
-		<None Include="..\..\README.md">
-			<Pack>True</Pack>
-			<PackagePath>\</PackagePath>
-		</None>
-	</ItemGroup>
+    <ItemGroup>
+        <None Include="..\..\README.md">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
+    </ItemGroup>
 
-	<!-- SourceLink -->
-	<ItemGroup>
-		<!-- For GitHub -->
-		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
-	</ItemGroup>
+    <!-- SourceLink -->
+    <ItemGroup>
+        <!-- For GitHub -->
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
+    </ItemGroup>
 </Project>
