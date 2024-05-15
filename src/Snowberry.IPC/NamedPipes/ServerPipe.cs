@@ -3,7 +3,7 @@ using System.IO.Pipes;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Snowberry.IPC;
+namespace Snowberry.IPC.NamedPipes;
 
 /// <summary>
 /// The server pipe type.
@@ -22,8 +22,7 @@ public class ServerPipe : BasePipe
                 PipeTransmissionMode.Byte,
                 PipeOptions.Asynchronous);
 
-        OnPipeStreamInitialized();
-
+        OnPipeStreamCreated();
         _cancellationToken = cancellationToken;
     }
 
@@ -36,7 +35,7 @@ public class ServerPipe : BasePipe
     }
 
     /// <inheritdoc/>
-    protected override void OnPipeStreamInitialized()
+    protected override void OnPipeStreamCreated()
     {
     }
 

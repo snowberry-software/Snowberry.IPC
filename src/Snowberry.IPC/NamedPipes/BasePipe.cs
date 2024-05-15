@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO.Pipes;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Snowberry.IPC.Events;
 
-namespace Snowberry.IPC;
+using Snowberry.IPC.NamedPipes.Events;
+
+namespace Snowberry.IPC.NamedPipes;
 
 /// <summary>
 /// The base type for the pipe server and client.
@@ -24,26 +24,31 @@ public abstract class BasePipe : IDisposable
     /// <summary>
     /// Gets called when the pipe gets closed by losing the connection between the client and the server.
     /// </summary>
-    public event EventHandler? PipeClosed;
+    public event EventHandler<PipeCloseReason>? PipeClosed;
 
     protected readonly string? _pipeDebugName;
     protected PipeStream? _pipeStream;
     protected bool _protectedIsConnected;
 
-    protected List<byte> _dynamicPacketBuffer = [];
     protected bool _useDynamicDataPacketSize;
 
-    public BasePipe(string? pipeDebugName, PipeStream pipeStream) : this(pipeDebugName, pipeStream, false)
-    {
-    }
-
-    public BasePipe(string? pipeDebugName, PipeStream pipeStream, bool useDynamicDataPacketSize)
+    /// <summary>
+    /// Creates a new base pipe.
+    /// </summary>
+    /// <param name="pipeDebugName">The optional debug name.</param>
+    /// <param name="pipeStream">The stream of the pipe.</param>
+    /// <param name="useDynamicDataPacketSize">Whether to use <see cref="UseDynamicDataPacketSize"/>.</param>
+    public BasePipe(string? pipeDebugName, PipeStream pipeStream, bool useDynamicDataPacketSize = false)
     {
         _pipeDebugName = pipeDebugName;
         _pipeStream = pipeStream ?? throw new ArgumentNullException(nameof(pipeStream));
         _useDynamicDataPacketSize = useDynamicDataPacketSize;
     }
 
+    /// <summary>
+    /// Creates a new base pipe.
+    /// </summary>
+    /// <param name="pipeDebugName">The optional debug name</param>
     protected BasePipe(string? pipeDebugName)
     {
         _pipeDebugName = pipeDebugName;
@@ -52,7 +57,7 @@ public abstract class BasePipe : IDisposable
     /// <summary>
     /// Gets called when the pipe stream has been initialized.
     /// </summary>
-    protected abstract void OnPipeStreamInitialized();
+    protected abstract void OnPipeStreamCreated();
 
     /// <summary>
     /// Gets called when the pipe closes.
@@ -91,9 +96,6 @@ public abstract class BasePipe : IDisposable
 
         byte[] buffer = new byte[MaxBufferLength];
 
-        if (EnableDebugLogs)
-            Console.WriteLine($"{_pipeDebugName}: Start reading...");
-
         if (!UseDynamicDataPacketSize)
         {
             await HandleStaticBufferAsync(buffer, token);
@@ -105,31 +107,25 @@ public abstract class BasePipe : IDisposable
 
     protected virtual async Task HandleStaticBufferAsync(byte[] buffer, CancellationToken token)
     {
-        if (EnableDebugLogs)
-            Console.WriteLine($"{_pipeDebugName}: Reading statically...");
-
 #if NET6_0_OR_GREATER
         int readLength = await _pipeStream!.ReadAsync(buffer.AsMemory(0, MaxBufferLength), token);
 #else
         int readLength = await _pipeStream!.ReadAsync(buffer, 0, MaxBufferLength, token);
 #endif
 
-        if (EnableDebugLogs)
-            Console.WriteLine($"{_pipeDebugName}: Statically read {readLength} bytes...");
-
         if (IsPipeClosed(readLength, token))
             return;
 
-        OnDataReceived(buffer, readLength);
-        DataReceived?.Invoke(this, new PipeEventArgs(buffer, readLength, usedDynamicallyRead: false));
+        byte[] readBytes = new byte[readLength];
+        Array.Copy(buffer, readBytes, readLength);
+
+        OnDataReceived(readBytes, readLength);
+        DataReceived?.Invoke(this, new PipeEventArgs(readBytes, readLength, usedDynamicallyRead: false));
         await StartReadingAsync(token);
     }
 
     protected virtual async Task HandleDynamicBufferAsync(byte[] buffer, CancellationToken token)
     {
-        if (EnableDebugLogs)
-            Console.WriteLine($"{_pipeDebugName}: Reading dynamically...");
-
         int expectedRead = -1;
         var dynamicBuffer = new List<byte>();
         do
@@ -140,9 +136,6 @@ public abstract class BasePipe : IDisposable
             int readLength = await _pipeStream!.ReadAsync(buffer, 0, MaxBufferLength, token);
 #endif
 
-            if (EnableDebugLogs)
-                Console.WriteLine($"{_pipeDebugName}: Dynamically read {readLength} bytes...");
-
             if (IsPipeClosed(readLength, token))
                 return;
 
@@ -150,7 +143,7 @@ public abstract class BasePipe : IDisposable
             {
                 expectedRead = BitConverter.ToInt32(buffer, 0);
 
-                if ((readLength - 4) == expectedRead)
+                if (readLength - 4 == expectedRead)
                 {
 #if NET6_0_OR_GREATER
                     byte[] actualBuffer = buffer.AsSpan()[4..readLength].ToArray();
@@ -163,8 +156,6 @@ public abstract class BasePipe : IDisposable
                     await StartReadingAsync(token);
                     return;
                 }
-
-                continue;
             }
 
             dynamicBuffer.AddRange(buffer.Take(readLength));
@@ -184,7 +175,7 @@ public abstract class BasePipe : IDisposable
 
         _protectedIsConnected = false;
         OnPipeClosed(PipeCloseReason.NoConnection);
-        PipeClosed?.Invoke(this, EventArgs.Empty);
+        PipeClosed?.Invoke(this, PipeCloseReason.NoConnection);
         return true;
     }
 
@@ -198,14 +189,8 @@ public abstract class BasePipe : IDisposable
     {
         _ = _pipeStream ?? throw new NullReferenceException(nameof(_pipeStream));
 
-        if (EnableDebugLogs)
-            Console.WriteLine($"{_pipeDebugName}: Writing {length} bytes...");
-
         if (UseDynamicDataPacketSize)
         {
-            if (EnableDebugLogs)
-                Console.WriteLine($"\t> Using dynamic write...");
-
 #if NET6_0_OR_GREATER
             var packet = new List<byte>(data.AsSpan().Slice(offset, length).ToArray());
 #else
@@ -243,15 +228,14 @@ public abstract class BasePipe : IDisposable
             return;
 
         if (_pipeStream.IsConnected)
-        {
 #if NET6_0_OR_GREATER
             if (OperatingSystem.IsWindows())
 #endif
                 _pipeStream.WaitForPipeDrain();
-        }
 
         _pipeStream.Close();
         OnPipeClosed(PipeCloseReason.Dispose);
+        PipeClosed?.Invoke(this, PipeCloseReason.Dispose);
         _pipeStream.Dispose();
         _pipeStream = null!;
     }
@@ -262,7 +246,7 @@ public abstract class BasePipe : IDisposable
     public string? PipeDebugName => _pipeDebugName;
 
     /// <summary>
-    /// Determines wheter the pipe stream is connected.
+    /// Determines whether the pipe stream is connected.
     /// </summary>
     public bool IsConnected =>
             // NOTE(VNC):
@@ -278,17 +262,13 @@ public abstract class BasePipe : IDisposable
     /// <remarks>
     /// The length of the data will be written as 32bit-integer before the payload if this is enabled.<para/>
     /// The read operation will only be completed if the data length is exactly as the length that has been provided.<para/>
+    /// If this is disabled and the incoming payload is longer than <see cref="MaxBufferLength"/> then it will be split to two different read cycles.<para/>
     /// </remarks>
     public bool UseDynamicDataPacketSize
     {
         get => _useDynamicDataPacketSize;
         set => _useDynamicDataPacketSize = value;
     }
-
-    /// <summary>
-    /// Enables debug loggin.
-    /// </summary>
-    public bool EnableDebugLogs { get; set; }
 
     /// <summary>
     /// The pipe stream that is used.

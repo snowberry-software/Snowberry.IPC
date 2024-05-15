@@ -29,9 +29,9 @@ serverPipe.GotConnectionEvent += (sender, e) =>
     Console.WriteLine("Server pipe got a new client...");
 };
 
-serverPipe.PipeClosed += (_, _) =>
+serverPipe.PipeClosed += (_, reason) =>
 {
-    Console.WriteLine("Server pipe got closed...");
+    Console.WriteLine("Server pipe got closed ({0})...", reason);
 };
 
 await serverPipe.WaitForClientAsync();
@@ -57,9 +57,9 @@ clientPipe.DataReceived += (s, e) =>
     Console.ResetColor();
 };
 
-clientPipe.PipeClosed += (_, _) =>
+clientPipe.PipeClosed += (_, reason) =>
 {
-    Console.WriteLine("Server pipe got closed...");
+    Console.WriteLine("Client pipe got closed ({0})...", reason);
 };
 
 await clientPipe.ConnectAsync();
