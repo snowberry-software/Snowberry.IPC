@@ -9,8 +9,8 @@
         <Authors>Snowberry Software</Authors>
         <Description>Interprocess communication (IPC) library utilizes named pipes to allow communication between different processes running on the same machine.</Description>
 
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-        <VersionPrefix>2.0.0</VersionPrefix>
+        <AssemblyVersion>2.1.0.0</AssemblyVersion>
+        <VersionPrefix>$(AssemblyVersion)</VersionPrefix>
 
         <IsPackable>true</IsPackable>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
