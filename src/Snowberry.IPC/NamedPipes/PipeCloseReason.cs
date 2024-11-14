@@ -1,4 +1,4 @@
-﻿namespace Snowberry.IPC;
+﻿namespace Snowberry.IPC.NamedPipes;
 
 /// <summary>
 /// The reason why the pipe got closed.

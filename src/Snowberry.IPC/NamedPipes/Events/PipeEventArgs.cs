@@ -1,15 +1,15 @@
 ﻿using System;
 
-namespace Snowberry.IPC.Events;
+namespace Snowberry.IPC.NamedPipes.Events;
 
 /// <summary>
-/// The pipe data event.
+/// Used for notifying incoming pipe data.
 /// </summary>
 public class PipeEventArgs : EventArgs
 {
     public PipeEventArgs(byte[] data, int dataLength, bool usedDynamicallyRead)
     {
-        Data = data;
+        Data = [.. data];
         Length = dataLength;
         UsedDynamicallyRead = usedDynamicallyRead;
     }

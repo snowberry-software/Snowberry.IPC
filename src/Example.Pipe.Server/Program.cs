@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using Snowberry.IPC;
+using Snowberry.IPC.NamedPipes;
 
 Console.Title = "Example Server";
 
@@ -22,9 +22,9 @@ serverPipe.GotConnectionEvent += (sender, e) =>
     Console.WriteLine("Server pipe got a new client...");
 };
 
-serverPipe.PipeClosed += (_, _) =>
+serverPipe.PipeClosed += (_, reason) =>
 {
-    Console.WriteLine("Server pipe got closed...");
+    Console.WriteLine("Server pipe got closed ({0})...", reason);
 };
 
 Console.WriteLine("Waiting for client to connect...");

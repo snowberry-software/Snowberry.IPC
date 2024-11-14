@@ -2,7 +2,7 @@
 using System.IO.Pipes;
 using System.Threading.Tasks;
 
-namespace Snowberry.IPC;
+namespace Snowberry.IPC.NamedPipes;
 
 /// <summary>
 /// The client pipe type.
@@ -12,11 +12,11 @@ public class ClientPipe : BasePipe
     public ClientPipe(string serverName, string pipeName, string? pipeDebugName) : base(pipeDebugName)
     {
         _pipeStream = new NamedPipeClientStream(serverName, pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
-        OnPipeStreamInitialized();
+        OnPipeStreamCreated();
     }
 
     /// <inheritdoc/>
-    protected override void OnPipeStreamInitialized()
+    protected override void OnPipeStreamCreated()
     {
     }
 
@@ -32,7 +32,6 @@ public class ClientPipe : BasePipe
         if (timeout == null)
             await ((NamedPipeClientStream)_pipeStream).ConnectAsync();
         else
-        {
             try
             {
                 await ((NamedPipeClientStream)_pipeStream).ConnectAsync(timeout.Value);
@@ -41,7 +40,6 @@ public class ClientPipe : BasePipe
             {
                 return false;
             }
-        }
 
         if (_pipeStream.IsConnected)
         {

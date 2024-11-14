@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using Snowberry.IPC;
+using Snowberry.IPC.NamedPipes;
 
 Console.Title = "Example Client";
 
@@ -15,9 +15,9 @@ clientPipe.DataReceived += (s, e) =>
     Console.ResetColor();
 };
 
-clientPipe.PipeClosed += (_, _) =>
+clientPipe.PipeClosed += (_, reason) =>
 {
-    Console.WriteLine("Server pipe got closed...");
+    Console.WriteLine("Client pipe got closed ({0})...", reason);
 };
 
 Console.WriteLine("Waiting for server connection...");
